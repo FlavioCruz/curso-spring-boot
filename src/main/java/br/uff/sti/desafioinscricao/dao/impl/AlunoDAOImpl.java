@@ -2,6 +2,7 @@ package br.uff.sti.desafioinscricao.dao.impl;
 
 import br.uff.sti.desafioinscricao.dao.AlunoDAO;
 import br.uff.sti.desafioinscricao.model.AnoSemestre;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -18,12 +19,16 @@ public class AlunoDAOImpl implements AlunoDAO {
 
     @Override
     public long getCargaHorariaTotal(String matricula, AnoSemestre anoSemestre) {
-        return Optional.ofNullable(jdbcTemplate.queryForObject(
-                " SELECT SUM(t.carga_horaria) FROM inscricao insc "
-                + "  INNER JOIN turma t on t.id = insc.id_turma "
-                + " WHERE t.ano_semestre = ? AND insc.matricula_aluno = ?",
-                Long.class, anoSemestre.intValue(), matricula))
-                .orElse(0L);
+        try{
+            StringBuilder query = new StringBuilder("SELECT SUM(t.carga_horaria) FROM inscricao as i, turma as t ")
+                                            .append("WHERE i.id_turma = t.id                                     ")
+                                            .append("AND i.matricula_aluno = ? AND t.ano_semestre = ?            ");
+
+            return Optional.ofNullable(jdbcTemplate.queryForObject(query.toString(),
+                    new Object[]{matricula, anoSemestre.intValue()}, Long.class)).orElse(0L);
+        }catch (EmptyResultDataAccessException e){
+            return 0;
+        }
     }
 
     /**
@@ -33,10 +38,11 @@ public class AlunoDAOImpl implements AlunoDAO {
      */
     @Override
     public boolean existeAluno(String matricula) {
-        return Optional.of(jdbcTemplate.queryForObject(
-                "SELECT count(*) FROM aluno WHERE matricula = ?",
-                new Object[]{matricula},
-                Long.class
-        )).orElse(0L) > 0;
+
+        StringBuilder query = new StringBuilder("SELECT COUNT(*) FROM ALUNO ")
+                                        .append("WHERE matricula = ?        ");
+
+        return Optional.ofNullable(jdbcTemplate.queryForObject(query.toString(),
+                new Object[]{matricula}, Integer.class)).orElse(0 ) > 0;
     }
 }

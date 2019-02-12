@@ -80,6 +80,14 @@ public class Grupo02Test {
 
         private final String MATRICULA = "1111";
         private final AnoSemestre ANO_SEMESTRE = new AnoSemestre(20182);
+
+        @Test
+        public void aluno_existe(){
+            boolean alunoExiste = alunoDAO.existeAluno(MATRICULA);
+
+            assertEquals(true, alunoExiste);
+        }
+
         @Test
         public void nao_possui_inscricao_em_20182_entao_nao_possui_carga_horaria(){
 

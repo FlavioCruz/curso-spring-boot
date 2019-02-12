@@ -27,7 +27,7 @@ public class InscricaoDAOImpl implements InscricaoDAO {
 
     @Override
     public boolean estaInscrito(String matricula, long idTurma) {
-        return Optional.of(jdbcTemplate.queryForObject(
+        return Optional.ofNullable(jdbcTemplate.queryForObject(
                 "SELECT count(*) FROM inscricao WHERE matricula_aluno = ? AND id_turma = ?",
                 new Object[]{matricula, idTurma},
                 Long.class
